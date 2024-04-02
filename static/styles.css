@@ -1,0 +1,63 @@
+/* Reset default browser styles */
+html, body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, form, fieldset, legend, button, input, textarea, blockquote {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif; /* Use Roboto font for better readability */
+    background-color: #f0f0f0; /* Light gray background */
+    color: #333; /* Default text color */
+}
+
+.container {
+    max-width: 600px; /* Limit container width for better readability */
+    margin: 0 auto; /* Center container horizontally */
+    padding: 20px; /* Add padding */
+}
+
+.panel {
+    border-radius: 8px; /* Rounded corners for panels */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+    background-color: #fff; /* Panel background color */
+}
+
+.panel-heading {
+    background-color: #6c757d; /* Dark gray color for panel heading background */
+    color: #fff; /* Text color for panel heading */
+    border-top-left-radius: 8px; /* Rounded top-left corner */
+    border-top-right-radius: 8px; /* Rounded top-right corner */
+    padding: 15px 20px; /* Add padding */
+}
+
+.panel-title {
+    font-size: 24px; /* Increase font size for panel title */
+    font-weight: bold; /* Bold font weight */
+}
+
+.panel-body {
+    padding: 20px; /* Add padding */
+}
+
+.form-control {
+    border: 1px solid #ced4da; /* Light gray border for form controls */
+    border-radius: 4px; /* Rounded corners for form inputs */
+    padding: 10px; /* Add padding */
+}
+
+.btn-primary {
+    background-color: #007bff; /* Blue color for buttons */
+    border: none; /* Remove button border */
+    border-radius: 4px; /* Rounded corners for buttons */
+    padding: 10px 20px; /* Add padding */
+    color: #fff; /* Button text color */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active {
+    background-color: #0056b3; /* Darker shade on hover */
+}
