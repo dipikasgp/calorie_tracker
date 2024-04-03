@@ -24,8 +24,8 @@ def index():
         db.commit()
     cur = db.execute("select log_date.entry_date, sum(food.protein) as protein,"
                      "sum(food.carbohydrates) as carbohydrates,"
-                     "sum(food.fat) as fat, sum(food.calories) as calories from log_date join food_date on "
-                     "food_date.log_date_id = log_date.id join food on "
+                     "sum(food.fat) as fat, sum(food.calories) as calories from log_date left join food_date on "
+                     "food_date.log_date_id = log_date.id left join food on "
                      "food_date.food_id = food.id group by log_date.entry_date"
                      )
     results = cur.fetchall()
