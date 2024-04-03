@@ -1,27 +1,15 @@
 from flask import Flask, render_template, g, request, url_for
 import sqlite3
 from datetime import datetime
+from database import connect_db, get_db
 
 app = Flask(__name__)
-
-
-def connect_db():
-    sql = sqlite3.connect('C:/Dipika/Study/calorie_tracker/food_log.db')
-    sql.row_factory = sqlite3.Row
-    return sql
-
-
-def get_db():
-    if not hasattr(g, 'sqlite3'):
-        g.sqlite_db = connect_db()
-    return g.sqlite_db
 
 
 @app.teardown_appcontext
 def close_db(error):
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
-
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -32,35 +20,69 @@ def index():
         dt = datetime.strptime(date, '%Y-%m-%d')
         database_date = datetime.strftime(dt, '%Y%m%d')
 
-        db.execute('insert into log_date (entry_date) values(?) order by entry_date DESC', [database_date])
+        db.execute('insert into log_date (entry_date) values(?)', [database_date])
         db.commit()
-    cur = db.execute('select entry_date from log_date')
+    cur = db.execute("select log_date.entry_date, sum(food.protein) as protein,"
+                     "sum(food.carbohydrates) as carbohydrates,"
+                     "sum(food.fat) as fat, sum(food.calories) as calories from log_date join food_date on "
+                     "food_date.log_date_id = log_date.id join food on "
+                     "food_date.food_id = food.id group by log_date.entry_date"
+                     )
     results = cur.fetchall()
 
     pretty_res = []
     for i in results:
         single_date = {}
+        single_date['entry_date'] = i['entry_date']
         d = datetime.strptime(str(i['entry_date']), '%Y%m%d')
-        single_date['entry_date'] = datetime.strftime(d, '%B %d, %Y')
+        single_date['pretty_date'] = datetime.strftime(d, '%B %d, %Y')
+        single_date['protein'] = i['protein']
+        single_date['carbohydrate'] = i['carbohydrates']
+        single_date['fat'] = i['fat']
+        single_date['calorie'] = i['calories']
         pretty_res.append(single_date)
+
+
     return render_template('home.html', results=pretty_res)
 
 
 @app.route('/view/<date>', methods=['POST', 'GET'])
 def view(date):
     db = get_db()
-    # if request.method == 'POST':
+    cur = db.execute('select id, entry_date from log_date where entry_date = ?', [date])
+    date_result = cur.fetchone()
+    if request.method == 'POST':
+        db.execute('insert into food_date(food_id, log_date_id) values(?,?)',
+                   [request.form['food_select'], date_result['id']])
+        db.commit()
 
-    cur = db.execute('select entry_date from log_date where entry_date = ?', [date])
-    result = cur.fetchone()
-
-    d = datetime.strptime(str(result['entry_date']), '%Y%m%d')
+    d = datetime.strptime(str(date_result['entry_date']), '%Y%m%d')
     pretty_date = datetime.strftime(d, '%B %d, %Y')
 
-    cur = db.execute('select id, name from food')
-    food_list = cur.fetchall()
+    food_cur = db.execute('select id, name from food')
+    food_list = food_cur.fetchall()
 
-    return render_template('day.html', date=pretty_date, food_result=food_list)
+    log_cur = db.execute("select food.name, food.protein, food.carbohydrates, "
+                         "food.fat, food.calories from log_date join food_date on "
+                         "food_date.log_date_id = log_date.id join food on "
+                         "food_date.food_id = food.id where log_date.entry_date = ?", [date])
+
+    log_results = log_cur.fetchall()
+
+    totals = {}
+    totals['protein'] = 0
+    totals['carbohydrates'] = 0
+    totals['fat'] = 0
+    totals['calories'] = 0
+    for food in log_results:
+        totals['protein'] += food['protein']
+        totals['carbohydrates'] += food['carbohydrates']
+        totals['fat'] += food['fat']
+        totals['calories'] += food['calories']
+
+    return render_template('day.html',entry_date = date_result['entry_date'],
+                           pretty_date=pretty_date, food_result=food_list,
+                           log_results=log_results, total=totals)
 
 
 @app.route('/food', methods=['GET', 'POST'])
